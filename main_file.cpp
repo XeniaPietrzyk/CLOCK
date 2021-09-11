@@ -120,7 +120,6 @@ GLuint readTexture(const char* filename) {
 //STEP: Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
 	initShaders();	
-	glClearColor(0, 0, 0, 1); //Ustaw kolor czyszczenia bufora kolorów
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetKeyCallback(window, key_callback);
 }
@@ -133,10 +132,29 @@ void freeOpenGLProgram(GLFWwindow* window) {
 
 //STEP: Procedura rysująca zawartość sceny
 void drawScene(GLFWwindow* window) {
+	glClearColor(0.f, 0.f, 1.f, 0.f); //Ustaw kolor czyszczenia bufora kolorów
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
+		
+	spColored->use();
+	vec3 observer = vec3(0.0f, 0.0f, -18.0f);
+	vec3 center = vec3(0.0f, 0.0f, 0.0f);
+	vec3 noseVector = vec3(0.0f, 1.0f, 0.0f);
+	mat4 V = lookAt(observer, center, noseVector);
+	glUniformMatrix4fv(spColored->u("V"), 1, false, value_ptr(V));
 
-	//TODO: rysowanie sceny
+	float fovy = radians(50.0f);
+	float zNear = 1.f;
+	float zFar = 50.f;
+	mat4 P = perspective(fovy, 1.f, zNear, zFar);
+	glUniformMatrix4fv(spColored->u("P"), 1, false, value_ptr(P));
 
+	using namespace Models;
+	mat4 M = mat4(1.f);
+	glUniformMatrix4fv(spColored->u("M"), 1, false, value_ptr(M));
+	glUniform4f(spColored->u("color"), 1.f, 0.5f, 0.f, 0.f);
+	teapot.drawSolid();
+
+	
 	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
 }
 
