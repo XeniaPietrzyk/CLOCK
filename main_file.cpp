@@ -121,7 +121,9 @@ GLuint readTexture(const char* filename) {
 void initOpenGLProgram(GLFWwindow* window) {
 	initShaders();	
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
-	glfwSetKeyCallback(window, key_callback);
+	glfwSetKeyCallback(window, key_callback); //włączenie sterowania
+	loadModel(string("Cup.obj"));
+	tex = readTexture("bricks.png");
 }
 
 //STEP: Procedura zwalniania zasobów zajętych przez program
@@ -135,26 +137,45 @@ void drawScene(GLFWwindow* window) {
 	glClearColor(0.f, 0.f, 1.f, 0.f); //Ustaw kolor czyszczenia bufora kolorów
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
 		
-	spColored->use();
+	spLambertTextured->use();
+
 	vec3 observer = vec3(0.0f, 0.0f, -18.0f);
 	vec3 center = vec3(0.0f, 0.0f, 0.0f);
 	vec3 noseVector = vec3(0.0f, 1.0f, 0.0f);
 	mat4 V = lookAt(observer, center, noseVector);
-	glUniformMatrix4fv(spColored->u("V"), 1, false, value_ptr(V));
+	//wysyłanie macierzy V do GPU:
+	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, value_ptr(V));
 
 	float fovy = radians(50.0f);
 	float zNear = 1.f;
 	float zFar = 50.f;
 	mat4 P = perspective(fovy, 1.f, zNear, zFar);
-	glUniformMatrix4fv(spColored->u("P"), 1, false, value_ptr(P));
+	//wysyłanie macierzy P do GPU:
+	glUniformMatrix4fv(spLambertTextured->u("P"), 1, false, value_ptr(P));
 
 	using namespace Models;
 	mat4 M = mat4(1.f);
-	glUniformMatrix4fv(spColored->u("M"), 1, false, value_ptr(M));
-	glUniform4f(spColored->u("color"), 1.f, 0.5f, 0.f, 0.f);
-	teapot.drawSolid();
+	//wysyłanie macierzy M do GPU:
+	glUniformMatrix4fv(spLambertTextured->u("M"), 1, false, value_ptr(M));
+	glUniform4f(spLambertTextured->u("color"), 1.f, 0.5f, 0.f, 0.f);
 
-	
+	glEnableVertexAttribArray(spLambertTextured->a("vertex"));
+	glVertexAttribPointer(spLambertTextured->a("vertex"), 4, GL_FLOAT, false, 0, verts.data()); 
+	glEnableVertexAttribArray(spLambertTextured->a("normal"));
+	glVertexAttribPointer(spLambertTextured->a("normal"), 4, GL_FLOAT, false, 0, norms.data());
+	glEnableVertexAttribArray(spLambertTextured->a("texCoord"));
+	glVertexAttribPointer(spLambertTextured->a("texCoord"), 2, GL_FLOAT, false, 0, texCoords.data());
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glUniform1i(spLambertTextured->u("tex"), 0); 
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, indices.data());
+
+	glDisableVertexAttribArray(spLambertTextured->a("vertex"));
+	glDisableVertexAttribArray(spLambertTextured->a("texCoord"));
+	glDisableVertexAttribArray(spLambertTextured->a("normal"));
+
+
 	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
 }
 
