@@ -21,6 +21,11 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 
 #include "links.h"
 
+using namespace glm;
+using namespace std;
+
+GLuint tex;
+
 //STEP: Procedura obsługi błędów
 void error_callback(int error, const char* description) {
 	fputs(description, stderr);
@@ -35,11 +40,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 //STEP: Wczytywanie modelu .obj
 void loadModel(std::string plik) {
 	
+	//TODO: wczytywanie modelu
 }
 
 //STEP: Wczytywanie tekstur
 GLuint readTexture(const char* filename) {
 	GLuint tex;
+	glActiveTexture(GL_TEXTURE0);
+
+	std::vector<unsigned char> image;
+	unsigned width, height;
+	unsigned error = lodepng::decode(image, width, height, filename);
+
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	return tex;
 }
 
@@ -49,11 +68,13 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glClearColor(0, 0, 0, 1); //Ustaw kolor czyszczenia bufora kolorów
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetKeyCallback(window, key_callback);
+	tex = readTexture("bricks.png");
 }
 
 //STEP: Zwolnienie zasobów zajętych przez program
 void freeOpenGLProgram(GLFWwindow* window) {
 	freeShaders();
+	glDeleteTextures(1, &tex);
 }
 
 //STEP: Procedura rysująca zawartość sceny
