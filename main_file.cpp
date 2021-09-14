@@ -123,7 +123,6 @@ public:
 
 Object* cup;
 Object* cubeObject;
-Object* room;
 
 //STEP: Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -143,16 +142,15 @@ void initOpenGLProgram(GLFWwindow* window) {
 	initShaders();	
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetKeyCallback(window, key_callback); //włączenie sterowania
-	cup = new Object(string("Cup.obj"), "glass.png");
+	//cup = new Object(string("Cup.obj"), "glass.png");
 	cubeObject = new Object(string("cube.obj"), "glass.png");
-	room = new Object(string("room.obj"), "glass.png");
 }
 
 //STEP: Procedura zwalniania zasobów zajętych przez program
 void freeOpenGLProgram(GLFWwindow* window) {
 	freeShaders();
-	glDeleteTextures(1, &(cup->tex));
-	delete cup;
+	//glDeleteTextures(1, &(cup->tex));
+	//delete cup;
 	glDeleteTextures(1, &(cubeObject->tex));
 	delete cubeObject;
 }
@@ -214,8 +212,8 @@ void drawScene(GLFWwindow* window) {
 
 	//NOTE: rysowanie obiektów
 	drawObject(cubeObject, M);
-	drawObject(cup, Mcup);
-	drawObject(room, Mroom);
+	//drawObject(cup, Mcup);
+	//drawObject(room, Mroom);
 
 	//wysyłanie macierzy M,V,P do GPU:
 	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, value_ptr(V));
