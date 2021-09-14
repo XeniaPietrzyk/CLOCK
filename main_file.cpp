@@ -52,15 +52,13 @@ public:
 
 		aiMesh* mesh = scene->mMeshes[0];
 
-		//NOTE: TU SIĘ SYPIE
+	
 		for (int i = 0; i < mesh->mNumVertices; i++) {
 			aiVector3D vertex = mesh->mVertices[i]; //aiVector3D podobny do glm::vec3
 			this->verts.push_back(vec4(vertex.x, vertex.y, vertex.z, 1));
 
 			aiVector3D normal = mesh->mNormals[i]; //Wektory znormalizowane
 			this->norms.push_back(vec4(normal.x, normal.y, normal.z, 0));
-
-			//NOTE: coś z tym
 		
 			//liczba zdefiniowanych zestawów wsp. teksturowania (zestawów jest max 8)
 			//unsigned int liczba_zest = mesh->GetNumColorChannels();
@@ -125,6 +123,7 @@ public:
 
 Object* cup;
 Object* cubeObject;
+Object* room;
 
 //STEP: Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -146,6 +145,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glfwSetKeyCallback(window, key_callback); //włączenie sterowania
 	cup = new Object(string("Cup.obj"), "glass.png");
 	cubeObject = new Object(string("cube.obj"), "glass.png");
+	room = new Object(string("room.obj"), "glass.png");
 }
 
 //STEP: Procedura zwalniania zasobów zajętych przez program
@@ -159,7 +159,7 @@ void freeOpenGLProgram(GLFWwindow* window) {
 
 
 //STEP: Procedura rysująca obiekty
-void drawObject(Object* object, mat4 objectMatrix, mat4 viewMatrix, mat4 perspectiveMatrix) {
+void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 perspectiveMatrix*/) {
 
 	glUniformMatrix4fv(spLambertTextured->u("M"), 1, false, value_ptr(objectMatrix));
 
@@ -196,6 +196,10 @@ void drawScene(GLFWwindow* window) {
 	Mcup = translate(Mcup, vec3(-5.f, 0.f, 0.f));
 	Mcup = scale(Mcup, vec3(0.5f, 0.5f, 0.5f));
 
+	//podłoga
+	mat4 Mroom = mat4(1.f);
+
+
 	//NOTE: Macierze V, P
 	vec3 observer = vec3(0.0f, 0.0f, -18.0f);
 	vec3 center = vec3(0.0f, 0.0f, 0.0f);
@@ -209,9 +213,9 @@ void drawScene(GLFWwindow* window) {
 
 
 	//NOTE: rysowanie obiektów
-	drawObject(cubeObject, M, V, P);
-	drawObject(cup, Mcup, V, P);
-
+	drawObject(cubeObject, M);
+	drawObject(cup, Mcup);
+	drawObject(room, Mroom);
 
 	//wysyłanie macierzy M,V,P do GPU:
 	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, value_ptr(V));
@@ -226,13 +230,6 @@ void drawScene(GLFWwindow* window) {
 	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
 }
 
-
-//STEP: Procedura rysująca obiekty
-void drawObjects(GLFWwindow* window) {
-
-	//TODO: rysowanie obiektu
-
-}
 
 int main(void)
 {
