@@ -121,8 +121,8 @@ public:
 };
 
 
-Object* cup;
-Object* cubeObject;
+Object* gear1;
+Object* gear2;
 
 //STEP: Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -142,17 +142,17 @@ void initOpenGLProgram(GLFWwindow* window) {
 	initShaders();	
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetKeyCallback(window, key_callback); //włączenie sterowania
-	//cup = new Object(string("Cup.obj"), "glass.png");
-	cubeObject = new Object(string("cube.obj"), "glass.png");
+	gear1 = new Object(string("gears.obj"), "steel.png");
+	gear2 = new Object(string("gear2.obj"), "steel.png");
 }
 
 //STEP: Procedura zwalniania zasobów zajętych przez program
 void freeOpenGLProgram(GLFWwindow* window) {
 	freeShaders();
-	//glDeleteTextures(1, &(cup->tex));
-	//delete cup;
-	glDeleteTextures(1, &(cubeObject->tex));
-	delete cubeObject;
+	glDeleteTextures(1, &(gear1->tex));
+	delete gear1;
+	glDeleteTextures(1, &(gear2->tex));
+	delete gear2;
 }
 
 
@@ -175,7 +175,7 @@ void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 persp
 void drawScene(GLFWwindow* window) {
 	using namespace Models;
 
-	glClearColor(0.f, 0.f, 1.f, 0.f); //Ustaw kolor czyszczenia bufora kolorów
+	glClearColor(0.f, 0.f, 0.5f, 0.f); //Ustaw kolor czyszczenia bufora kolorów
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
 		
 	spLambertTextured->use();	
@@ -185,17 +185,16 @@ void drawScene(GLFWwindow* window) {
 	glEnableVertexAttribArray(spLambertTextured->a("texCoord"));
 
 	//NOTE: macierze M obiektów
-	//cube
-	mat4 M = mat4(1.f);
-	M = translate(M, vec3(5.f, 0.f, 0.f));
+	//gear1
+	mat4 Mgear1 = mat4(1.f);
+	Mgear1 = translate(Mgear1, vec3(-1.f, 0.f, 0.f));
+	Mgear1 = scale(Mgear1, vec3(4.f, 4.f, 4.f));
 	
-	//cup
-	mat4 Mcup = mat4(1.f);
-	Mcup = translate(Mcup, vec3(-5.f, 0.f, 0.f));
-	Mcup = scale(Mcup, vec3(0.5f, 0.5f, 0.5f));
 
-	//podłoga
-	mat4 Mroom = mat4(1.f);
+	//gear2
+	mat4 Mgear2 = mat4(1.f);
+	Mgear2 = translate(Mgear2, vec3(1.f, 0.f, 0.f));
+	Mgear2 = scale(Mgear2, vec3(4.f, 4.f, 4.f));
 
 
 	//NOTE: Macierze V, P
@@ -211,9 +210,8 @@ void drawScene(GLFWwindow* window) {
 
 
 	//NOTE: rysowanie obiektów
-	drawObject(cubeObject, M);
-	//drawObject(cup, Mcup);
-	//drawObject(room, Mroom);
+	drawObject(gear1, Mgear1);
+	drawObject(gear2, Mgear2);
 
 	//wysyłanie macierzy M,V,P do GPU:
 	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, value_ptr(V));
@@ -241,7 +239,7 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	window = glfwCreateWindow(720, 720, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+	window = glfwCreateWindow(1000, 1000, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
 
 	if (!window) //Jeżeli okna nie udało się utworzyć, to zamknij program
 	{
