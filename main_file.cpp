@@ -24,6 +24,8 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 using namespace glm;
 using namespace std;
 
+float aspectRatio = 1; //do skalowania okna programu
+
 //STEP: Klasa obiektu
 class Object {
 public:
@@ -136,11 +138,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	//TODO: sterowanie
 }
 
+void windowResizeCallback(GLFWwindow* window, int width, int height) {
+	if (height == 0) return;
+	aspectRatio = (float)width / (float)height;
+	glViewport(0, 0, width, height);
+}
 
 //STEP: Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
 	initShaders();	
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
+	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback); //włączenie sterowania
 	gear1 = new Object(string("gears.obj"), "steel.png");
 	gear2 = new Object(string("gear2.obj"), "steel.png");
