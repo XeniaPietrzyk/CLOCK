@@ -125,6 +125,12 @@ public:
 
 Object* gear1;
 Object* gear2;
+Object* pudlo;
+Object* moon;
+Object* pendulum;
+Object* face;
+Object* glass;
+Object* room;
 
 //STEP: Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -151,8 +157,17 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback); //włączenie sterowania
-	gear1 = new Object(string("gears.obj"), "steel.png");
-	gear2 = new Object(string("gear2.obj"), "steel.png");
+	gear1 = new Object(string("gears.obj"), "wahadlo.png");
+	gear2 = new Object(string("gear2.obj"), "wahadlo.png");
+	pudlo = new Object(string("zegar.obj"), "pudlo.png");
+	moon = new Object(string("moon.obj"), "moon.png");
+	pendulum = new Object(string("wahadlo.obj"), "wahadlo.png");
+	face = new Object(string("tarcza.obj"), "tarcza.png");
+	room = new Object(string("room.obj"), "room.png");
+
+	//TODO:
+	//jak wyrenderować szkło?
+	//glass = new Object(string(""), "");
 }
 
 //STEP: Procedura zwalniania zasobów zajętych przez program
@@ -162,10 +177,25 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	delete gear1;
 	glDeleteTextures(1, &(gear2->tex));
 	delete gear2;
+	glDeleteTextures(1, &(pudlo->tex));
+	delete pudlo;
+	glDeleteTextures(1, &(moon->tex));
+	delete moon;
+	glDeleteTextures(1, &(pendulum->tex));
+	delete pendulum;
+	glDeleteTextures(1, &(face->tex));
+	delete face;
+	glDeleteTextures(1, &(room->tex));
+	delete room;
+	
+	//glDeleteTextures(1, &(glass->tex));
+	//delete glass;
 }
 
+//TODO: metoda rysowania obiektów w drugim rodzaju oświetlenia
 
-//STEP: Procedura rysująca obiekty
+
+//STEP: Procedura rysująca obiekty (spLambertTexture)
 void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 perspectiveMatrix*/) {
 
 	glUniformMatrix4fv(spLambertTextured->u("M"), 1, false, value_ptr(objectMatrix));
@@ -193,17 +223,49 @@ void drawScene(GLFWwindow* window) {
 	glEnableVertexAttribArray(spLambertTextured->a("normal"));
 	glEnableVertexAttribArray(spLambertTextured->a("texCoord"));
 
-	//NOTE: macierze M obiektów
+	//TODO: animacja obrotu zębatki
 	//gear1
 	mat4 Mgear1 = mat4(1.f);
-	Mgear1 = translate(Mgear1, vec3(-1.f, 0.f, 0.f));
-	Mgear1 = scale(Mgear1, vec3(4.f, 4.f, 4.f));
+	Mgear1 = translate(Mgear1, vec3(0.5f, 3.f, 0.f));
+	Mgear1 = scale(Mgear1, vec3(1.f, 1.f, 1.f));
 	
-
+	//TODO: animacja zależna od gear1
 	//gear2
 	mat4 Mgear2 = mat4(1.f);
-	Mgear2 = translate(Mgear2, vec3(1.f, 0.f, 0.f));
-	Mgear2 = scale(Mgear2, vec3(4.f, 4.f, 4.f));
+	Mgear2 = translate(Mgear2, vec3(1.f, 3.1f, 0.f));
+	Mgear2 = scale(Mgear2, vec3(0.75f, 0.75f, 0.75f));
+
+	//skrzynia zegara
+	mat4 Mpudlo = mat4(1.f);
+	Mpudlo = scale(Mpudlo, vec3(4.f, 4.f, 4.f));
+	Mpudlo = translate(Mpudlo, vec3(0.f, -1.f, 0.f));
+
+	//wahadlo
+	mat4 Mpendulum = mat4(1.f);
+	Mpendulum = scale(Mpendulum, vec3(4.f, 4.f, 4.f));
+	Mpendulum = translate(Mpendulum, vec3(0.f, -1.f, 0.f));
+
+	//tarcza zegara
+	mat4 Mface = mat4(1.f);
+	Mface = scale(Mface, vec3(4.f, 4.f, 4.f));
+	Mface = translate(Mface, vec3(0.f, -1.f, 0.f));
+
+	//pomieszczenie
+	mat4 Mroom = mat4(1.f);
+	Mroom = translate(Mroom, vec3(-6.f, -8.f, 5.f));
+
+	// 
+	//TODO: SZKŁO
+	////szkło
+	//mat4 Mglass = mat4(1.f);
+	//Mglass = scale(Mglass, vec3(4.f, 4.f, 4.f));
+	//Mglass = translate(Mglass, vec3(0.f, -1.f, 0.f));
+
+	//TODO: animacja obrotu zależna od obrotu wskazówek
+	//skrzynia pory dnia
+	mat4 Mmoon = mat4(1.f);
+	Mmoon = scale(Mmoon, vec3(4.f, 4.f, 4.f));
+	Mmoon = translate(Mmoon, vec3(0.f, -1.f, 0.f));
 
 
 	//NOTE: Macierze V, P
@@ -221,6 +283,12 @@ void drawScene(GLFWwindow* window) {
 	//NOTE: rysowanie obiektów
 	drawObject(gear1, Mgear1);
 	drawObject(gear2, Mgear2);
+	drawObject(pudlo, Mpudlo);
+	drawObject(moon, Mmoon);
+	drawObject(pendulum, Mpendulum);
+	//drawObject(face, Mface);
+	//drawObject(glass, Mglass);
+	//drawObject(room, Mroom);
 
 	//wysyłanie macierzy M,V,P do GPU:
 	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, value_ptr(V));
