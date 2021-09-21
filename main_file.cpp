@@ -184,6 +184,7 @@ void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 persp
 void drawScene(GLFWwindow* window) {
 	using namespace Models;
 
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
 		
 	spLambertTextured->use();	
@@ -247,7 +248,9 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
+
 	window = glfwCreateWindow(500, 500, "ZEGAR", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+
 
 	if (!window) //Jeżeli okna nie udało się utworzyć, to zamknij program
 	{
