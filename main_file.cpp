@@ -153,6 +153,7 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	delete gear1;
 	glDeleteTextures(1, &(gear2->tex));
 	delete gear2;
+
 }
 
 
