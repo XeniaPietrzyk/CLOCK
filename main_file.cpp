@@ -24,6 +24,8 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 using namespace glm;
 using namespace std;
 
+float aspectRatio = 1; //do skalowania okna programu
+
 //STEP: Klasa obiektu
 class Object {
 public:
@@ -136,11 +138,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	//TODO: sterowanie
 }
 
+void windowResizeCallback(GLFWwindow* window, int width, int height) {
+	if (height == 0) return;
+	aspectRatio = (float)width / (float)height;
+	glViewport(0, 0, width, height);
+}
 
 //STEP: Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
 	initShaders();	
+	glClearColor(0.f, 0.f, 0.5f, 0.f); //Ustaw kolor czyszczenia bufora kolorów
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
+	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback); //włączenie sterowania
 	gear1 = new Object(string("gears.obj"), "steel.png");
 	gear2 = new Object(string("gear2.obj"), "steel.png");
@@ -153,7 +162,6 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	delete gear1;
 	glDeleteTextures(1, &(gear2->tex));
 	delete gear2;
-
 }
 
 
@@ -176,7 +184,7 @@ void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 persp
 void drawScene(GLFWwindow* window) {
 	using namespace Models;
 
-	glClearColor(0.f, 0.f, 0.5f, 0.f); //Ustaw kolor czyszczenia bufora kolorów
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
 		
 	spLambertTextured->use();	
@@ -207,7 +215,7 @@ void drawScene(GLFWwindow* window) {
 	float fovy = radians(50.0f);
 	float zNear = 1.f;
 	float zFar = 50.f;
-	mat4 P = perspective(fovy, 1.f, zNear, zFar);
+	mat4 P = perspective(fovy, aspectRatio, zNear, zFar);
 
 
 	//NOTE: rysowanie obiektów
@@ -240,7 +248,9 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	window = glfwCreateWindow(1000, 1000, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+
+	window = glfwCreateWindow(500, 500, "ZEGAR", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+
 
 	if (!window) //Jeżeli okna nie udało się utworzyć, to zamknij program
 	{
