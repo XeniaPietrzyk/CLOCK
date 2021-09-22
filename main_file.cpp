@@ -1,30 +1,23 @@
-/*
-Niniejszy program jest wolnym oprogramowaniem; możesz go
-rozprowadzać dalej i / lub modyfikować na warunkach Powszechnej
-Licencji Publicznej GNU, wydanej przez Fundację Wolnego
-Oprogramowania - według wersji 2 tej Licencji lub(według twojego
-wyboru) którejś z późniejszych wersji.
-
-Niniejszy program rozpowszechniany jest z nadzieją, iż będzie on
-użyteczny - jednak BEZ JAKIEJKOLWIEK GWARANCJI, nawet domyślnej
-gwarancji PRZYDATNOŚCI HANDLOWEJ albo PRZYDATNOŚCI DO OKREŚLONYCH
-ZASTOSOWAŃ.W celu uzyskania bliższych informacji sięgnij do
-Powszechnej Licencji Publicznej GNU.
-
-Z pewnością wraz z niniejszym programem otrzymałeś też egzemplarz
-Powszechnej Licencji Publicznej GNU(GNU General Public License);
-jeśli nie - napisz do Free Software Foundation, Inc., 59 Temple
-Place, Fifth Floor, Boston, MA  02110 - 1301  USA
-*/
-
-/* ZEGAR - PIETRZYK, SAMELAK*/
-
 #include "links.h"
+#define GLM_FORCE_RADIANS
 
 using namespace glm;
 using namespace std;
 
 float aspectRatio = 1; //do skalowania okna programu
+float speed_x = 0; //[radiany/s]
+float speed_y = 0; //[radiany/s]
+float walk_speed = 0;
+
+glm::vec3 pos = glm::vec3(0, 2, -11);
+
+glm::vec3 calcDir(float kat_x, float kat_y) {
+	glm::vec4 dir = glm::vec4(0, 0, 1, 0);
+	glm::mat4 M = glm::rotate(glm::mat4(1.0f), kat_y, glm::vec3(0, 1, 0));
+	M = glm::rotate(M, kat_x, glm::vec3(1, 0, 0));
+	dir = M * dir;
+	return glm::vec3(dir);
+}
 
 //STEP: Klasa obiektu
 class Object {
@@ -141,7 +134,23 @@ void error_callback(int error, const char* description) {
 //STEP: Sterowanie
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod)
 {
-	//TODO: sterowanie
+	if (action == GLFW_PRESS) {
+		if (key == GLFW_KEY_LEFT) speed_y = 1;
+		if (key == GLFW_KEY_RIGHT) speed_y = -1;
+		if (key == GLFW_KEY_M) speed_x = 1;
+		if (key == GLFW_KEY_N) speed_x = -1;
+		if (key == GLFW_KEY_UP) walk_speed = 2;
+		if (key == GLFW_KEY_DOWN) walk_speed = -2;
+
+	}
+	if (action == GLFW_RELEASE) {
+		if (key == GLFW_KEY_LEFT) speed_y = 0;
+		if (key == GLFW_KEY_RIGHT) speed_y = 0;
+		if (key == GLFW_KEY_M) speed_x = 0;
+		if (key == GLFW_KEY_N) speed_x = 0;
+		if (key == GLFW_KEY_UP) walk_speed = 0;
+		if (key == GLFW_KEY_DOWN) walk_speed = 0;
+	}
 }
 
 void windowResizeCallback(GLFWwindow* window, int width, int height) {
@@ -211,7 +220,7 @@ void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 persp
 };
 
 //STEP: Procedura rysująca scenę
-void drawScene(GLFWwindow* window) {
+void drawScene(GLFWwindow* window, float kat_x,float kat_y) {
 	using namespace Models;
 
 
@@ -269,15 +278,14 @@ void drawScene(GLFWwindow* window) {
 
 
 	//NOTE: Macierze V, P
-	vec3 observer = vec3(0.0f, 0.0f, -18.0f);
-	vec3 center = vec3(0.0f, 0.0f, 0.0f);
-	vec3 noseVector = vec3(0.0f, 1.0f, 0.0f);
-	mat4 V = lookAt(observer, center, noseVector);
+
+	glm::mat4 V = glm::lookAt(pos, pos + calcDir(kat_x, kat_y), glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
 
 	float fovy = radians(50.0f);
 	float zNear = 1.f;
 	float zFar = 50.f;
 	mat4 P = perspective(fovy, aspectRatio, zNear, zFar);
+
 
 
 	//NOTE: rysowanie obiektów
@@ -339,10 +347,17 @@ int main(void)
 
 
 	//STEP: Główna pętla	
+	float angle = 0; //zadeklaruj zmienną przechowującą aktualny kąt obrotu
+	float kat_x = 0;
+	float kat_y = 0;
+	glfwSetTime(0); //Wyzeruj licznik czasu
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
-	{		
+	{
+		kat_x += speed_x * glfwGetTime();
+		kat_y += speed_y * glfwGetTime();
+		pos += (float)(walk_speed * glfwGetTime()) * calcDir(kat_x, kat_y);
 		glfwSetTime(0); //Wyzeruj licznik czasu
-		drawScene(window); //Wykonaj procedurę rysującą
+		drawScene(window,kat_x,kat_y); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 
