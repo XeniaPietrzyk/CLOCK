@@ -8,15 +8,17 @@ float aspectRatio = 1; //do skalowania okna programu
 float speed_x = 0; //[radiany/s]
 float speed_y = 0; //[radiany/s]
 float walk_speed = 0;
+float speed = 2;
 
-glm::vec3 pos = glm::vec3(0, 2, -11);
+vec3 pos = glm::vec3(0, 2, -11);
 
-glm::vec3 calcDir(float kat_x, float kat_y) {
-	glm::vec4 dir = glm::vec4(0, 0, 1, 0);
-	glm::mat4 M = glm::rotate(glm::mat4(1.0f), kat_y, glm::vec3(0, 1, 0));
-	M = glm::rotate(M, kat_x, glm::vec3(1, 0, 0));
+//STEP: Kamera
+vec3 calcDir(float kat_x, float kat_y) {
+	vec4 dir = vec4(0, 0, 1, 0);
+	mat4 M = rotate(glm::mat4(1.0f), kat_y, vec3(0, 1, 0));
+	M = rotate(M, kat_x, vec3(1, 0, 0));
 	dir = M * dir;
-	return glm::vec3(dir);
+	return vec3(dir);
 }
 
 //STEP: Klasa obiektu
@@ -220,7 +222,7 @@ void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 persp
 };
 
 //STEP: Procedura rysująca scenę
-void drawScene(GLFWwindow* window, float kat_x,float kat_y) {
+void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	using namespace Models;
 
 
@@ -236,13 +238,15 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y) {
 	//gear1
 	mat4 Mgear1 = mat4(1.f);
 	Mgear1 = translate(Mgear1, vec3(0.5f, 3.f, 0.f));
-	Mgear1 = scale(Mgear1, vec3(1.f, 1.f, 1.f));
+	Mgear1 = scale(Mgear1, vec3(1.f,1.f, 1.f));
+	Mgear1 = rotate(Mgear1, angle, vec3(0.0f, 0.0f, 1.0f));
 	
 	//TODO: animacja zależna od gear1
 	//gear2
-	mat4 Mgear2 = mat4(1.f);
+	mat4 Mgear2 = mat4(0.4f);
 	Mgear2 = translate(Mgear2, vec3(1.f, 3.1f, 0.f));
 	Mgear2 = scale(Mgear2, vec3(0.75f, 0.75f, 0.75f));
+	Mgear2 = rotate(Mgear2, angle, vec3(0.0f, 0.0f, -1.0f));
 
 	//skrzynia zegara
 	mat4 Mpudlo = mat4(1.f);
@@ -279,7 +283,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y) {
 
 	//NOTE: Macierze V, P
 
-	glm::mat4 V = glm::lookAt(pos, pos + calcDir(kat_x, kat_y), glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
+	glm::mat4 V = lookAt(pos, pos + calcDir(kat_x, kat_y), vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
 
 	float fovy = radians(50.0f);
 	float zNear = 1.f;
@@ -325,7 +329,7 @@ int main(void)
 	}
 
 
-	window = glfwCreateWindow(500, 500, "ZEGAR", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+	window = glfwCreateWindow(1000, 1000, "ZEGAR", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
 
 
 	if (!window) //Jeżeli okna nie udało się utworzyć, to zamknij program
@@ -356,8 +360,9 @@ int main(void)
 		kat_x += speed_x * glfwGetTime();
 		kat_y += speed_y * glfwGetTime();
 		pos += (float)(walk_speed * glfwGetTime()) * calcDir(kat_x, kat_y);
+		angle+=speed * glfwGetTime();
 		glfwSetTime(0); //Wyzeruj licznik czasu
-		drawScene(window,kat_x,kat_y); //Wykonaj procedurę rysującą
+		drawScene(window,kat_x,kat_y,angle); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 
