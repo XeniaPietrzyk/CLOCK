@@ -167,7 +167,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_N) speed_x = -1;
 		if (key == GLFW_KEY_UP) walk_speed = 5;
 		if (key == GLFW_KEY_DOWN) walk_speed = -5;
-		if (key == GLFW_KEY_P) speed = 60 * speed;
+		if (key == GLFW_KEY_P) speed = 180 * speed;
 	}
 
 	if (action == GLFW_RELEASE) {
@@ -300,7 +300,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	mat4 Mmoon = mat4(1.f);
 	Mmoon = scale(Mmoon, vec3(4.f, 4.f, 3.67f));
 	Mmoon = translate(Mmoon, vec3(0.f, 0.99f, 2.1f));
-	Mmoon = rotate(Mmoon, (0.016f*angle), vec3(0.f, 0.f, 1.f));
+	Mmoon = rotate(Mmoon, ((0.016f*angle)/2.f), vec3(0.f, 0.f, 1.f));
 
 	//duza wskazowka
 	mat4 MduzaWskazowka = mat4(1.f);
