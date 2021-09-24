@@ -197,7 +197,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	pudlo = new Object(string("zegar.obj"), "pudlo.png");
 	moon = new Object(string("moon.obj"), "moon.png");
 	pendulum = new Object(string("wahadlo.obj"), "wahadlo.png");
-	//face = new Object(string("tarcza.obj"), "tarcza.png");
+	face = new Object(string("face.obj"), "tarcza.png");
 	//dWskazowka = new Object(string("dWskazowka.obj"), "dwskazowka.png");
 	//mWskazowka = new Object(string("mWskazowka.obj"), "steel.png");
 	dyngs = new Object(string("dyngs.obj"), "steel.png");
@@ -221,9 +221,9 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	delete moon;
 	glDeleteTextures(1, &(pendulum->tex));
 	delete pendulum;
-	/*glDeleteTextures(1, &(face->tex));
+	glDeleteTextures(1, &(face->tex));
 	delete face;
-	glDeleteTextures(1, &(dWskazowka->tex));
+	/*glDeleteTextures(1, &(dWskazowka->tex));
 	delete dWskazowka;
 	glDeleteTextures(1, &(mWskazowka->tex));
 	delete mWskazowka;*/
@@ -268,13 +268,13 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	//OBIEKTY DYNAMICZNE
 	//gear1
 	mat4 Mgear1 = mat4(1.f);
-	Mgear1 = translate(Mgear1, vec3(0.f, 3.f, 8.f));
+	Mgear1 = translate(Mgear1, vec3(0.f, 3.05f, 8.f));
 	Mgear1 = scale(Mgear1, vec3(0.7f, 0.7f, 0.7f));
 	Mgear1 = rotate(Mgear1, angle, vec3(0.0f, 0.0f, 1.0f));
 	
 	//gear2
 	mat4 Mgear2 = mat4(0.4f);
-	Mgear2 = translate(Mgear2, vec3(0.f, 2.6f, 8.f));
+	Mgear2 = translate(Mgear2, vec3(0.f, 2.65f, 8.f));
 	Mgear2 = scale(Mgear2, vec3(0.7f, 0.7f, 0.7f));
 	Mgear2 = rotate(Mgear2, (1.1f*angle), vec3(0.0f, 0.0f, -1.0f));
 
@@ -312,7 +312,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	//OBIEKTY STATYCZNE
 	//dyngs
 	mat4 Mdyngs = mat4(1.f);
-	Mdyngs = translate(Mdyngs, vec3(0.f, 3.f, 7.7f));
+	Mdyngs = translate(Mdyngs, vec3(0.f, 3.05f, 7.67f));
 	Mdyngs = scale(Mdyngs, vec3(0.7f, 0.7f, 0.7f));
 
 	//skrzynia zegara
@@ -322,8 +322,8 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 
 	//tarcza zegara
 	mat4 Mface = mat4(1.f);
-	Mface = scale(Mface, vec3(4.f, 4.f, 4.f));
-	Mface = translate(Mface, vec3(0.f, -1.f, 2.1f));
+	Mface = translate(Mface, vec3(0.f, 3.05f, 7.68f));
+	Mface = scale(Mface, vec3(0.4f, 0.4f, 0.4f));
 
 	//TODO: SZKŁO
 	////szkło
@@ -364,7 +364,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	drawObject(pudlo, Mpudlo);
 	drawObject(moon, Mmoon);
 	drawObject(pendulum, Mpendulum);
-	//drawObject(face, Mface);
+	drawObject(face, Mface);
 	//drawObject(mWskazowka, MmalaWskazowka);
 	//drawObject(dWskazowka, MduzaWskazowka);
 	drawObject(dyngs, Mdyngs);
