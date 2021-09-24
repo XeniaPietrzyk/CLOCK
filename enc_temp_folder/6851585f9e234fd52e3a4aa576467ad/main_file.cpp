@@ -290,23 +290,23 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	Mpendulum = scale(Mpendulum, vec3(4.f, 4.f, 4.f));
 	Mpendulum = translate(Mpendulum, vec3(0.f, 0.5f, 2.1f));	
 		
-	if ((pendiculumAcumulator >= 0 && pendiculumAcumulator < 30) || (pendiculumAcumulator >= 90 && pendiculumAcumulator < 120))
+	if (pendiculumAcumulator >= 0 && pendiculumAcumulator < 30)
 	{
 		pendiculumAngle += speed * glfwGetTime();
 		pendiculumAcumulator++;
 	}
-	if ((pendiculumAcumulator >= 30 && pendiculumAcumulator < 60) || (pendiculumAcumulator >= 60 && pendiculumAcumulator < 90))
+	if (pendiculumAcumulator >= 30 && pendiculumAcumulator < 60)
 	{
 		pendiculumAngle -= speed * glfwGetTime();
 		pendiculumAcumulator++;
 	}
-	if (pendiculumAcumulator == 120)
+	if (pendiculumAcumulator == 60)
 	{
-		pendiculumAcumulator = 0;
 		pendiculumAngle = 0;
+		pendiculumAcumulator = 0;
 	}
 
-	Mpendulum = rotate(Mpendulum, pendiculumAngle, vec3(0.0f, 0.0f, -1.0f));
+	//Mpendulum = rotate(Mpendulum, pendiculumAngle, vec3(0.0f, 0.0f, -1.0f));
 
 	//TODO: animacja obrotu zależna od obrotu wskazówek
 	//skrzynia pory dnia
