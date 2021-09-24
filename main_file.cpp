@@ -283,8 +283,6 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	Mgear2 = scale(Mgear2, vec3(0.7f, 0.7f, 0.7f));
 	Mgear2 = rotate(Mgear2, (1.1f*angle), vec3(0.0f, 0.0f, -1.0f));
 
-	//TODO: obrót wahadła zależny od pełnej h
-	//TODO: obrót wahadła ograniczony do 30 stopni
 	//wahadlo
 	mat4 Mpendulum = mat4(1.f);
 	Mpendulum = scale(Mpendulum, vec3(4.f, 4.f, 4.f));
@@ -436,7 +434,6 @@ int main(void)
 	}
 
 	initOpenGLProgram(window); //Operacje inicjujące
-
 
 	//STEP: Główna pętla	
 	float angle = 0; //zadeklaruj zmienną przechowującą aktualny kąt obrotu
