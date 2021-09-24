@@ -31,6 +31,7 @@ float walk_speed = 0;
 //TODO: dostosować prędkość do realnych sekund/minut
 float speed = 0.1f;
 //TODO: dodać prędkość przyspieszoną do prezentacji działania mechanizmu
+//...
 
 vec3 pos = glm::vec3(0, 2, -11);
 
@@ -199,12 +200,11 @@ void initOpenGLProgram(GLFWwindow* window) {
 	//face = new Object(string("tarcza.obj"), "tarcza.png");
 	//dWskazowka = new Object(string("dWskazowka.obj"), "dwskazowka.png");
 	//mWskazowka = new Object(string("mWskazowka.obj"), "steel.png");
-	//dyngs = new Object(string("dyngs.obj"), "steel.png");
+	dyngs = new Object(string("dyngs.obj"), "steel.png");
 	roomFloor = new Object(string("floor.obj"), "floor.png");
 	roomWall = new Object(string("floor.obj"), "wall.png");
 
-	//TODO:
-	//jak wyrenderować szkło?
+	//TODO: jak wyrenderować szkło?
 	//glass = new Object(string(""), "");
 }
 
@@ -226,9 +226,9 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	glDeleteTextures(1, &(dWskazowka->tex));
 	delete dWskazowka;
 	glDeleteTextures(1, &(mWskazowka->tex));
-	delete mWskazowka;
+	delete mWskazowka;*/
 	glDeleteTextures(1, &(dyngs->tex));
-	delete dyngs;*/
+	delete dyngs;
 	glDeleteTextures(1, &(roomFloor->tex));
 	delete roomFloor;
 	glDeleteTextures(1, &(roomWall->tex));
@@ -265,15 +265,13 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	glEnableVertexAttribArray(spLambertTextured->a("normal"));
 	glEnableVertexAttribArray(spLambertTextured->a("texCoord"));
 
-	//TODO: położenie wszyskich elementów w scenie
-	//TODO: położenie zębatek
+	//OBIEKTY DYNAMICZNE
 	//gear1
 	mat4 Mgear1 = mat4(1.f);
 	Mgear1 = translate(Mgear1, vec3(0.f, 3.f, 8.f));
 	Mgear1 = scale(Mgear1, vec3(0.7f, 0.7f, 0.7f));
 	Mgear1 = rotate(Mgear1, angle, vec3(0.0f, 0.0f, 1.0f));
 	
-	//TODO: animacja zależna od gear1
 	//gear2
 	mat4 Mgear2 = mat4(0.4f);
 	Mgear2 = translate(Mgear2, vec3(0.f, 2.6f, 8.f));
@@ -286,10 +284,14 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	mat4 Mpendulum = mat4(1.f);
 	Mpendulum = scale(Mpendulum, vec3(4.f, 4.f, 4.f));
 	Mpendulum = translate(Mpendulum, vec3(0.f, 0.5f, 2.1f));
-	if (true)
+	/*if (pendiculumAcumulator >= 0 && pendiculumAcumulator < 10)
 	{
 		Mpendulum = rotate(Mpendulum, angle, vec3(0.0f, 0.0f, -1.0f));
-	}	
+	}
+	else
+	{
+		Mpendulum = rotate(Mpendulum, angle, vec3(0.0f, 0.0f, 1.0f));
+	}*/
 
 	//TODO: animacja obrotu zależna od obrotu wskazówek
 	//skrzynia pory dnia
@@ -297,13 +299,6 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	Mmoon = scale(Mmoon, vec3(4.f, 4.f, 3.67f));
 	Mmoon = translate(Mmoon, vec3(0.f, 0.99f, 2.1f));
 	Mmoon = rotate(Mmoon, angle, vec3(0.f, 0.f, 1.f));
-
-
-
-	//tarcza zegara
-	mat4 Mface = mat4(1.f);
-	Mface = scale(Mface, vec3(4.f, 4.f, 4.f));
-	Mface = translate(Mface, vec3(0.f, -1.f, 2.1f));
 
 	//duza wskazowka
 	mat4 MduzaWskazowka = mat4(1.f);
@@ -314,14 +309,21 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	mat4 MmalaWskazowka = mat4(1.f);
 	MmalaWskazowka = scale(MmalaWskazowka, vec3(0.1f, 0.f, 0.1f));
 
+	//OBIEKTY STATYCZNE
 	//dyngs
 	mat4 Mdyngs = mat4(1.f);
-	Mdyngs = scale(Mdyngs, vec3(0.1f, 0.f, 0.1f));
+	Mdyngs = translate(Mdyngs, vec3(0.f, 3.f, 7.7f));
+	Mdyngs = scale(Mdyngs, vec3(0.7f, 0.7f, 0.7f));
 
 	//skrzynia zegara
 	mat4 Mpudlo = mat4(1.f);
 	Mpudlo = scale(Mpudlo, vec3(4.f, 4.f, 4.f));
 	Mpudlo = translate(Mpudlo, vec3(0.f, -1.f, 2.1f));
+
+	//tarcza zegara
+	mat4 Mface = mat4(1.f);
+	Mface = scale(Mface, vec3(4.f, 4.f, 4.f));
+	Mface = translate(Mface, vec3(0.f, -1.f, 2.1f));
 
 	//TODO: SZKŁO
 	////szkło
@@ -365,7 +367,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	//drawObject(face, Mface);
 	//drawObject(mWskazowka, MmalaWskazowka);
 	//drawObject(dWskazowka, MduzaWskazowka);
-	//drawObject(dyngs, Mdyngs);
+	drawObject(dyngs, Mdyngs);
 	//drawObject(glass, Mglass);
 	drawObject(roomFloor, Mfloor);
 	drawObject(roomWall, MleftWall);
