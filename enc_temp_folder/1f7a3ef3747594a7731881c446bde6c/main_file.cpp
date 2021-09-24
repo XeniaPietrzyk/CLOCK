@@ -167,7 +167,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_N) speed_x = -1;
 		if (key == GLFW_KEY_UP) walk_speed = 5;
 		if (key == GLFW_KEY_DOWN) walk_speed = -5;
-		if (key == GLFW_KEY_P) speed = 60 * speed;
 	}
 
 	if (action == GLFW_RELEASE) {
@@ -177,7 +176,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_N) speed_x = 0;
 		if (key == GLFW_KEY_UP) walk_speed = 0;
 		if (key == GLFW_KEY_DOWN) walk_speed = 0;
-		if (key == GLFW_KEY_P) speed = 0.1f;
 	}
 }
 

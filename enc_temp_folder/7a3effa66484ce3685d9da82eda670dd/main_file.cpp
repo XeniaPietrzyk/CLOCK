@@ -167,7 +167,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_N) speed_x = -1;
 		if (key == GLFW_KEY_UP) walk_speed = 5;
 		if (key == GLFW_KEY_DOWN) walk_speed = -5;
-		if (key == GLFW_KEY_P) speed = 60 * speed;
 	}
 
 	if (action == GLFW_RELEASE) {
@@ -177,7 +176,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_N) speed_x = 0;
 		if (key == GLFW_KEY_UP) walk_speed = 0;
 		if (key == GLFW_KEY_DOWN) walk_speed = 0;
-		if (key == GLFW_KEY_P) speed = 0.1f;
 	}
 }
 
@@ -300,19 +298,17 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	mat4 Mmoon = mat4(1.f);
 	Mmoon = scale(Mmoon, vec3(4.f, 4.f, 3.67f));
 	Mmoon = translate(Mmoon, vec3(0.f, 0.99f, 2.1f));
-	Mmoon = rotate(Mmoon, (0.016f*angle), vec3(0.f, 0.f, 1.f));
+	Mmoon = rotate(Mmoon, angle, vec3(0.f, 0.f, 1.f));
 
 	//duza wskazowka
 	mat4 MduzaWskazowka = mat4(1.f);
-	MduzaWskazowka = translate(MduzaWskazowka, vec3(0.f, 3.05f, 7.67f));
-	MduzaWskazowka = scale(MduzaWskazowka, vec3(0.36f, 0.36f, 0.36f));
-	MduzaWskazowka = rotate(MduzaWskazowka, angle, vec3(0.f, 0.f, 1.f));
+	MduzaWskazowka = translate(MduzaWskazowka, vec3(0.f, 1.f, 8.1f));
+	MduzaWskazowka = scale(MduzaWskazowka, vec3(0.5f, 0.5f, 0.5f));
+	//MduzaWskazowka = scale(MduzaWskazowka, vec3(0.2f, 0.2f, 0.2f));
 
 	//mala wskazowka
 	mat4 MmalaWskazowka = mat4(1.f);
-	MmalaWskazowka = translate(MmalaWskazowka, vec3(0.f, 3.05f, 7.67f));
-	MmalaWskazowka = scale(MmalaWskazowka, vec3(0.36f, 0.36f, 0.36f));
-	MmalaWskazowka = rotate(MmalaWskazowka, (0.016f*angle), vec3(0.f, 0.f, 1.f));
+	//MmalaWskazowka = scale(MmalaWskazowka, vec3(0.1f, 0.f, 0.1f));
 
 	//OBIEKTY STATYCZNE
 	//dyngs
