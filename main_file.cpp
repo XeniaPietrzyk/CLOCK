@@ -29,7 +29,7 @@ float speed_x = 0; //[radiany/s]
 float speed_y = 0; //[radiany/s]
 float walk_speed = 0;
 //TODO: dostosować prędkość do realnych sekund/minut
-float speed = 2;
+float speed = 0.1f;
 //TODO: dodać prędkość przyspieszoną do prezentacji działania mechanizmu
 
 vec3 pos = glm::vec3(0, 2, -11);
@@ -269,28 +269,36 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	//TODO: położenie zębatek
 	//gear1
 	mat4 Mgear1 = mat4(1.f);
-	Mgear1 = translate(Mgear1, vec3(0.5f, 3.f, 0.f));
-	Mgear1 = scale(Mgear1, vec3(1.f,1.f, 1.f));
+	Mgear1 = translate(Mgear1, vec3(0.f, 3.f, 8.f));
+	Mgear1 = scale(Mgear1, vec3(0.7f, 0.7f, 0.7f));
 	Mgear1 = rotate(Mgear1, angle, vec3(0.0f, 0.0f, 1.0f));
 	
 	//TODO: animacja zależna od gear1
 	//gear2
 	mat4 Mgear2 = mat4(0.4f);
-	Mgear2 = translate(Mgear2, vec3(1.f, 3.1f, 0.f));
-	Mgear2 = scale(Mgear2, vec3(0.75f, 0.75f, 0.75f));
-	Mgear2 = rotate(Mgear2, angle, vec3(0.0f, 0.0f, -1.0f));
+	Mgear2 = translate(Mgear2, vec3(0.f, 2.6f, 8.f));
+	Mgear2 = scale(Mgear2, vec3(0.7f, 0.7f, 0.7f));
+	Mgear2 = rotate(Mgear2, (1.1f*angle), vec3(0.0f, 0.0f, -1.0f));
 
-	//TODO: animacja obrotu zależna od obrotu wskazówek
-	//skrzynia pory dnia
-	mat4 Mmoon = mat4(1.f);
-	Mmoon = scale(Mmoon, vec3(4.f, 4.f, 4.f));
-	Mmoon = translate(Mmoon, vec3(0.f, 0.99f, 2.1f));
-	Mmoon = rotate(Mmoon, angle, vec3(0.f, 0.f, 1.f));
-
+	//TODO: obrót wahadła zależny od pełnej h
+	//TODO: obrót wahadła ograniczony do 30 stopni
 	//wahadlo
 	mat4 Mpendulum = mat4(1.f);
 	Mpendulum = scale(Mpendulum, vec3(4.f, 4.f, 4.f));
 	Mpendulum = translate(Mpendulum, vec3(0.f, 0.5f, 2.1f));
+	if (true)
+	{
+		Mpendulum = rotate(Mpendulum, angle, vec3(0.0f, 0.0f, -1.0f));
+	}	
+
+	//TODO: animacja obrotu zależna od obrotu wskazówek
+	//skrzynia pory dnia
+	mat4 Mmoon = mat4(1.f);
+	Mmoon = scale(Mmoon, vec3(4.f, 4.f, 3.67f));
+	Mmoon = translate(Mmoon, vec3(0.f, 0.99f, 2.1f));
+	Mmoon = rotate(Mmoon, angle, vec3(0.f, 0.f, 1.f));
+
+
 
 	//tarcza zegara
 	mat4 Mface = mat4(1.f);
@@ -315,25 +323,23 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	Mpudlo = scale(Mpudlo, vec3(4.f, 4.f, 4.f));
 	Mpudlo = translate(Mpudlo, vec3(0.f, -1.f, 2.1f));
 
-
 	//TODO: SZKŁO
 	////szkło
 	//mat4 Mglass = mat4(1.f);
 	//Mglass = scale(Mglass, vec3(4.f, 4.f, 4.f));
 	//Mglass = translate(Mglass, vec3(0.f, -1.f, 0.f));
 
-	//TODO: rozmieszczenie ścian i podłogi
 	//pomieszczenie
 	//podloga
 	mat4 Mfloor = mat4(1.f);
 	Mfloor = translate(Mfloor, vec3(0.f, -4.f, 0.f));
 	//sciana lewa
 	mat4 MleftWall = mat4(1.f);
-	MleftWall = translate(MleftWall, vec3(10.f, -4.f, 0.f));
+	MleftWall = translate(MleftWall, vec3(10.f, 0.f, 0.f));
 	MleftWall = rotate(MleftWall, 1.57f, vec3(0.f, 0.f, 1.f));
 	//sciana prawa
 	mat4 MrightWall = mat4(1.f);
-	MrightWall = translate(MrightWall, vec3(-10.f, -4.f, 0.f));
+	MrightWall = translate(MrightWall, vec3(-10.f, 0.f, 0.f));
 	MrightWall = rotate(MrightWall, 1.57f, vec3(0.f, 0.f, 1.f));
 	//sciana przednia
 	mat4 MfrontWall = mat4(1.f);
