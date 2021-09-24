@@ -32,8 +32,8 @@ float walk_speed = 0;
 //TODO: dostosować prędkość do realnych sekund/minut
 float hour = 0.f;
 float speed = 0.1f;
-float pendiculumAcumulator = 0;
-float pendiculumAngle = 0;
+float pendulumAcumulator = 0;
+float pendulumAngle = 0;
 
 vec3 pos = vec3(0, 2, -11);
 
@@ -288,23 +288,23 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	Mpendulum = scale(Mpendulum, vec3(4.f, 4.f, 4.f));
 	Mpendulum = translate(Mpendulum, vec3(0.f, 0.5f, 2.1f));	
 		
-	if ((pendiculumAcumulator >= 0 && pendiculumAcumulator < 30) || (pendiculumAcumulator >= 90 && pendiculumAcumulator < 120))
+	if ((pendulumAcumulator >= 0 && pendulumAcumulator < 30) || (pendulumAcumulator >= 90 && pendulumAcumulator < 120))
 	{
-		pendiculumAngle += speed * glfwGetTime();
-		pendiculumAcumulator++;
+		pendulumAngle += speed * glfwGetTime();
+		pendulumAcumulator++;
 	}
-	if ((pendiculumAcumulator >= 30 && pendiculumAcumulator < 60) || (pendiculumAcumulator >= 60 && pendiculumAcumulator < 90))
+	if ((pendulumAcumulator >= 30 && pendulumAcumulator < 60) || (pendulumAcumulator >= 60 && pendulumAcumulator < 90))
 	{
-		pendiculumAngle -= speed * glfwGetTime();
-		pendiculumAcumulator++;
+		pendulumAngle -= speed * glfwGetTime();
+		pendulumAcumulator++;
 	}
-	if (pendiculumAcumulator == 120)
+	if (pendulumAcumulator == 120)
 	{
-		pendiculumAcumulator = 0;
-		pendiculumAngle = 0;
+		pendulumAcumulator = 0;
+		pendulumAngle = 0;
 	}
 
-	Mpendulum = rotate(Mpendulum, pendiculumAngle, vec3(0.0f, 0.0f, -1.0f));
+	Mpendulum = rotate(Mpendulum, pendulumAngle, vec3(0.0f, 0.0f, -1.0f));
 
 	//TODO: animacja obrotu zależna od obrotu wskazówek
 	//skrzynia pory dnia
@@ -347,7 +347,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	//Mglass = scale(Mglass, vec3(4.f, 4.f, 4.f));
 	//Mglass = translate(Mglass, vec3(0.f, -1.f, 0.f));
 
-	//pomieszczenie
+	//POMIESZCZENIE
 	//podloga
 	mat4 Mfloor = mat4(1.f);
 	Mfloor = translate(Mfloor, vec3(0.f, -4.f, 0.f));
@@ -386,8 +386,8 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	drawObject(dyngs, Mdyngs);
 	//drawObject(glass, Mglass);
 	drawObject(roomFloor, Mfloor);
-	//drawObject(roomWall, MleftWall);
-	//drawObject(roomWall, MrightWall);
+	drawObject(roomWall, MleftWall);
+	drawObject(roomWall, MrightWall);
 	drawObject(roomWall, MfrontWall);
 
 	//wysyłanie macierzy M,V,P do GPU:
