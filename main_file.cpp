@@ -24,6 +24,8 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 using namespace glm;
 using namespace std;
 
+ShaderProgram* sp;
+
 float aspectRatio = 1; //do skalowania okna programu
 float speed_x = 0; //[radiany/s]
 float speed_y = 0; //[radiany/s]
@@ -52,7 +54,8 @@ vec3 calcDir(float kat_x, float kat_y) {
 //STEP: Klasa obiektu
 class Object {
 public:
-	GLuint tex;
+	GLuint tex0;
+	//GLuint tex1;
 
 	vector<vec4> verts;
 	vector<vec4> norms;
@@ -63,6 +66,11 @@ public:
 		loadModel(plik);
 		readTexture(filename);
 	}
+
+	/*Object(string plik, const char* filename, const char* tekstura1) {
+		loadModel(plik);
+		readTwoTextures(filename, tekstura1);
+	}*/
 
 	~Object() {}
 
@@ -127,20 +135,43 @@ public:
 
 	//STEP: Procedura wczytywania tekstur
 	void readTexture(const char* filename) {
-		GLuint tex;
+		GLuint tex0;
 		glActiveTexture(GL_TEXTURE0);
 
-		std::vector<unsigned char> image;
+		vector<unsigned char> image;
 		unsigned width, height;
 		unsigned error = lodepng::decode(image, width, height, filename);
 
-		glGenTextures(1, &(this->tex));
-		glBindTexture(GL_TEXTURE_2D, this->tex);
+		glGenTextures(1, &(this->tex0));
+		glBindTexture(GL_TEXTURE_2D, this->tex0);
 		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
+
+	/*void readTwoTextures(const char* texture0, const char* texture1) {
+		GLuint tex0;
+		GLuint tex1;
+
+		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE1);
+
+		vector<unsigned char> image;
+		unsigned width, height;
+		unsigned error = lodepng::decode(image, width, height, texture0);
+		unsigned width, height;
+		unsigned error = lodepng::decode(image, width, height, texture1);
+
+		glGenTextures(1, &(this->tex0));
+		glBindTexture(GL_TEXTURE_2D, this->tex0);
+		glGenTextures(1, &(this->tex1));
+		glBindTexture(GL_TEXTURE_2D, this->tex1);
+		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}*/
 };
 
 
@@ -170,8 +201,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_RIGHT) speed_y = -1;
 		if (key == GLFW_KEY_M) speed_x = 1;
 		if (key == GLFW_KEY_N) speed_x = -1;
-		if (key == GLFW_KEY_UP) walk_speed = 5;
-		if (key == GLFW_KEY_DOWN) walk_speed = -5;
+		if (key == GLFW_KEY_UP) walk_speed = 10;
+		if (key == GLFW_KEY_DOWN) walk_speed = -10;
 		if (key == GLFW_KEY_P)
 		{
 			speed = 180 * speed;
@@ -199,10 +230,14 @@ void windowResizeCallback(GLFWwindow* window, int width, int height) {
 //STEP: Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
 	initShaders();	
-	glClearColor(0.f, 0.f, 0.5f, 0.f); //Ustaw kolor czyszczenia bufora kolorów
+	sp = new ShaderProgram("v_simplest.glsl", NULL, "f_simplest.glsl");
+
+	glClearColor(1.f, 1.f, 1.f, 0.f); //Ustaw kolor czyszczenia bufora kolorów
 	glEnable(GL_DEPTH_TEST); //Włącz test głębokości na pikselach
+
 	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetKeyCallback(window, key_callback); //włączenie sterowania
+
 	gear1 = new Object(string("gears.obj"), "wahadlo.png");
 	gear2 = new Object(string("gear2.obj"), "wahadlo.png");
 	pudlo = new Object(string("zegar.obj"), "pudlo.png");
@@ -214,44 +249,46 @@ void initOpenGLProgram(GLFWwindow* window) {
 	dyngs = new Object(string("dyngs.obj"), "wahadlo.png");
 	roomFloor = new Object(string("floor.obj"), "floor.png");
 	roomWall = new Object(string("floor.obj"), "wall.png");
-
-	//TODO: jak wyrenderować szkło?
-	//glass = new Object(string(""), "");
+	glass = new Object(string("glass.obj"), "glass.png");
 }
 
 //STEP: Procedura zwalniania zasobów zajętych przez program
-void freeOpenGLProgram(GLFWwindow* window) {
-	freeShaders();
-	glDeleteTextures(1, &(gear1->tex));
+void freeOpenGLProgram(GLFWwindow* window) {	
+	glDeleteTextures(1, &(gear1->tex0));
 	delete gear1;
-	glDeleteTextures(1, &(gear2->tex));
+	glDeleteTextures(1, &(gear2->tex0));
 	delete gear2;
-	glDeleteTextures(1, &(pudlo->tex));
+	glDeleteTextures(1, &(pudlo->tex0));
 	delete pudlo;
-	glDeleteTextures(1, &(moon->tex));
+	glDeleteTextures(1, &(moon->tex0));
 	delete moon;
-	glDeleteTextures(1, &(pendulum->tex));
+	glDeleteTextures(1, &(pendulum->tex0));
 	delete pendulum;
-	glDeleteTextures(1, &(face->tex));
+	glDeleteTextures(1, &(face->tex0));
 	delete face;
-	glDeleteTextures(1, &(dWskazowka->tex));
+	glDeleteTextures(1, &(dWskazowka->tex0));
 	delete dWskazowka;
-	glDeleteTextures(1, &(mWskazowka->tex));
+	glDeleteTextures(1, &(mWskazowka->tex0));
 	delete mWskazowka;
-	glDeleteTextures(1, &(dyngs->tex));
+	glDeleteTextures(1, &(dyngs->tex0));
 	delete dyngs;
-	glDeleteTextures(1, &(roomFloor->tex));
+	glDeleteTextures(1, &(roomFloor->tex0));
 	delete roomFloor;
-	glDeleteTextures(1, &(roomWall->tex));
+	glDeleteTextures(1, &(roomWall->tex0));
 	delete roomWall;
-	
-	//glDeleteTextures(1, &(glass->tex));
-	//delete glass;
+	glDeleteTextures(1, &(glass->tex0));
+	delete glass;
+
+	freeShaders();
+	delete sp;	
 }
 
 
 //STEP: Procedura rysująca obiekty (spLambertTexture)
-void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 perspectiveMatrix*/) {
+void drawObjectLambertTextured(Object* object, mat4 objectMatrix, mat4 V, mat4 P) {
+
+	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, value_ptr(V));
+	glUniformMatrix4fv(spLambertTextured->u("P"), 1, false, value_ptr(P));
 
 	glUniformMatrix4fv(spLambertTextured->u("M"), 1, false, value_ptr(objectMatrix));
 
@@ -259,23 +296,39 @@ void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 persp
 	glVertexAttribPointer(spLambertTextured->a("normal"), 4, GL_FLOAT, false, 0, object->norms.data());
 	glVertexAttribPointer(spLambertTextured->a("texCoord"), 2, GL_FLOAT, false, 0, object->texCoords.data());
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, (object->tex));
 	glUniform1i(spLambertTextured->u("tex"), 0);
-	glDrawElements(GL_TRIANGLES, object->indices.size(), GL_UNSIGNED_INT, object->indices.data());
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, (object->tex0));
+	glDrawElements(GL_TRIANGLES, object->indices.size(), GL_UNSIGNED_INT, object->indices.data());	
 };
+
+
+void drawSpSimplest(Object* object, mat4 objectMatrix, mat4 V, mat4 P)
+{
+	//wysyłanie macierzy M,V,P do GPU:
+	glUniformMatrix4fv(sp->u("V"), 1, false, value_ptr(V));
+	glUniformMatrix4fv(sp->u("P"), 1, false, value_ptr(P));
+
+	glUniformMatrix4fv(sp->u("M"), 1, false, value_ptr(objectMatrix));
+
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, object->verts.data());
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, object->norms.data());
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, object->texCoords.data());
+
+	glUniform1i(sp->u("textureMap0"), 0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, (object->tex0));
+	glDrawElements(GL_TRIANGLES, object->indices.size(), GL_UNSIGNED_INT, object->indices.data());
+}
 
 //STEP: Procedura rysująca scenę
 void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	using namespace Models;
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
-		
-	spLambertTextured->use();	
-
-	glEnableVertexAttribArray(spLambertTextured->a("vertex"));
-	glEnableVertexAttribArray(spLambertTextured->a("normal"));
-	glEnableVertexAttribArray(spLambertTextured->a("texCoord"));
-
+	
 	//OBIEKTY DYNAMICZNE
 	//gear1
 	mat4 Mgear1 = mat4(1.f);
@@ -296,12 +349,12 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 		
 	if ((pendulumAcumulator >= 0 && pendulumAcumulator < 30) || (pendulumAcumulator >= 90 && pendulumAcumulator <= 120))
 	{
-		pendulumAngle += 15*angleSpeed * glfwGetTime();
+		pendulumAngle += 50*angleSpeed * glfwGetTime();
 		pendulumAcumulator++;
 	}
 	if ((pendulumAcumulator >= 30 && pendulumAcumulator < 60) || (pendulumAcumulator >= 60 && pendulumAcumulator < 90))
 	{
-		pendulumAngle -= 15*angleSpeed * glfwGetTime();
+		pendulumAngle -= 50*angleSpeed * glfwGetTime();
 		pendulumAcumulator++;
 	}
 	if (pendulumAcumulator == 121)
@@ -352,11 +405,9 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	Mface = translate(Mface, vec3(0.f, 3.055f, 7.68f));
 	Mface = scale(Mface, vec3(0.4f, 0.4f, 0.4f));
 
-	//TODO: SZKŁO
-	////szkło
-	//mat4 Mglass = mat4(1.f);
-	//Mglass = scale(Mglass, vec3(4.f, 4.f, 4.f));
-	//Mglass = translate(Mglass, vec3(0.f, -1.f, 0.f));
+	mat4 Mglass = mat4(1.f);
+	Mglass = translate(Mglass, vec3(0.f, 2.f, 8.f));
+	Mglass = scale(Mglass, vec3(4.f, 4.f, 4.f));
 
 	//POMIESZCZENIE
 	//podloga
@@ -385,31 +436,55 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	float zFar = 50.f;
 	mat4 P = perspective(fovy, aspectRatio, zNear, zFar);
 
-	//NOTE: rysowanie obiektów
-	drawObject(gear1, Mgear1);
-	drawObject(gear2, Mgear2);
-	drawObject(pudlo, Mpudlo);
-	drawObject(moon, Mmoon);
-	drawObject(pendulum, Mpendulum);
-	drawObject(face, Mface);
-	drawObject(mWskazowka, MmalaWskazowka);
-	drawObject(dWskazowka, MduzaWskazowka);
-	drawObject(dyngs, Mdyngs);
-	drawObject(dyngs, MozdobnyDyngs);
-	drawObject(dyngs, MozdobnyDyngs2);
-	//drawObject(glass, Mglass);
-	drawObject(roomFloor, Mfloor);
-	drawObject(roomWall, MleftWall);
-	drawObject(roomWall, MrightWall);
-	drawObject(roomWall, MfrontWall);
+	spLambertTextured->use();
 
-	//wysyłanie macierzy M,V,P do GPU:
-	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, value_ptr(V));
-	glUniformMatrix4fv(spLambertTextured->u("P"), 1, false, value_ptr(P));
+	glEnableVertexAttribArray(spLambertTextured->a("vertex"));
+	glEnableVertexAttribArray(spLambertTextured->a("normal"));
+	glEnableVertexAttribArray(spLambertTextured->a("texCoord"));
+
+	//NOTE: rysowanie obiektów
+	drawObjectLambertTextured(gear1, Mgear1, V, P);
+	drawObjectLambertTextured(gear2, Mgear2, V, P);
+	drawObjectLambertTextured(pudlo, Mpudlo, V, P);
+	drawObjectLambertTextured(moon, Mmoon, V, P);
+	drawObjectLambertTextured(pendulum, Mpendulum, V, P);
+	drawObjectLambertTextured(face, Mface, V, P);
+	//drawObjectLambertTextured(mWskazowka, MmalaWskazowka, V, P);
+	//drawObjectLambertTextured(dWskazowka, MduzaWskazowka, V, P);
+	//drawObjectLambertTextured(dyngs, Mdyngs, V, P);
+	//drawObjectLambertTextured(dyngs, MozdobnyDyngs, V, P);
+	//drawObjectLambertTextured(dyngs, MozdobnyDyngs2, V, P);
+	//drawObjectLambertTextured(roomFloor, Mfloor, V, P);
+	//drawObjectLambertTextured(roomWall, MleftWall, V, P);
+	//drawObjectLambertTextured(roomWall, MrightWall, V, P);
+	//drawObjectLambertTextured(roomWall, MfrontWall, V, P);
 		
 	glDisableVertexAttribArray(spLambertTextured->a("vertex"));
 	glDisableVertexAttribArray(spLambertTextured->a("texCoord"));
 	glDisableVertexAttribArray(spLambertTextured->a("normal"));
+
+	sp->use();
+
+	glEnableVertexAttribArray(sp->a("vertex"));
+	glEnableVertexAttribArray(sp->a("normal"));
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+
+	drawSpSimplest(gear2, Mgear2, V, P);
+	drawSpSimplest(mWskazowka, MmalaWskazowka, V, P);
+	drawSpSimplest(dWskazowka, MduzaWskazowka, V, P);
+	drawSpSimplest(dyngs, Mdyngs, V, P);
+	drawSpSimplest(dyngs, MozdobnyDyngs, V, P);
+	drawSpSimplest(dyngs, MozdobnyDyngs2, V, P);
+	drawSpSimplest(roomWall, MleftWall, V, P);
+	drawSpSimplest(roomWall, MrightWall, V, P);
+	drawSpSimplest(roomWall, MfrontWall, V, P);
+	drawSpSimplest(roomFloor, Mfloor, V, P);
+
+	//drawSpSimplest(glass, Mglass, V, P);
+
+	glDisableVertexAttribArray(sp->a("vertex"));
+	glDisableVertexAttribArray(sp->a("texCoord0"));
+	glDisableVertexAttribArray(sp->a("normal"));
 
 	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
 }
