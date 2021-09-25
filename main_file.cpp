@@ -205,7 +205,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_DOWN) walk_speed = -10;
 		if (key == GLFW_KEY_P)
 		{
-			speed = 180 * speed;
+			speed = 120 * speed;
 			angleSpeed = 0.8f;
 		}
 	}
@@ -347,7 +347,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	Mpendulum = scale(Mpendulum, vec3(4.f, 4.f, 4.f));
 	Mpendulum = translate(Mpendulum, vec3(0.f, 0.5f, 2.1f));	
 		
-	if ((pendulumAcumulator >= 0 && pendulumAcumulator < 30) || (pendulumAcumulator >= 90 && pendulumAcumulator <= 120))
+	if ((pendulumAcumulator >= 0 && pendulumAcumulator < 30) || (pendulumAcumulator >= 90 && pendulumAcumulator < 120))
 	{
 		pendulumAngle += 50*angleSpeed * glfwGetTime();
 		pendulumAcumulator++;
@@ -357,7 +357,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 		pendulumAngle -= 50*angleSpeed * glfwGetTime();
 		pendulumAcumulator++;
 	}
-	if (pendulumAcumulator == 121)
+	if (pendulumAcumulator == 120)
 	{
 		pendulumAcumulator = 0;
 		pendulumAngle = 0;
@@ -412,18 +412,19 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	//POMIESZCZENIE
 	//podloga
 	mat4 Mfloor = mat4(1.f);
-	Mfloor = translate(Mfloor, vec3(0.f, -4.f, 0.f));
+	Mfloor = translate(Mfloor, vec3(0.f, -4.f, -6.f));
+	Mfloor = scale(Mfloor, vec3(1.2f, 1.2f, 1.2f));
 	//sciana lewa
 	mat4 MleftWall = mat4(1.f);
-	MleftWall = translate(MleftWall, vec3(10.f, 0.f, 0.f));
+	MleftWall = translate(MleftWall, vec3(10.f, 10.f, 0.f));
 	MleftWall = rotate(MleftWall, 1.57f, vec3(0.f, 0.f, 1.f));
 	//sciana prawa
 	mat4 MrightWall = mat4(1.f);
-	MrightWall = translate(MrightWall, vec3(-10.f, 0.f, 0.f));
+	MrightWall = translate(MrightWall, vec3(-10.f, 10.f, 0.f));
 	MrightWall = rotate(MrightWall, 1.57f, vec3(0.f, 0.f, 1.f));
 	//sciana przednia
 	mat4 MfrontWall = mat4(1.f);
-	MfrontWall = translate(MfrontWall, vec3(0.f, 0.f, 10.f));
+	MfrontWall = translate(MfrontWall, vec3(0.f, 10.f, 10.f));
 	MfrontWall = rotate(MfrontWall, 1.57f, vec3(1.f, 0.f, 0.f));
 
 	//NOTE: Macierze V, P
@@ -447,7 +448,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	drawObjectLambertTextured(gear2, Mgear2, V, P);
 	drawObjectLambertTextured(pudlo, Mpudlo, V, P);
 	drawObjectLambertTextured(moon, Mmoon, V, P);
-	drawObjectLambertTextured(pendulum, Mpendulum, V, P);
+	//drawObjectLambertTextured(pendulum, Mpendulum, V, P);
 	drawObjectLambertTextured(face, Mface, V, P);
 	//drawObjectLambertTextured(mWskazowka, MmalaWskazowka, V, P);
 	//drawObjectLambertTextured(dWskazowka, MduzaWskazowka, V, P);
@@ -475,6 +476,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	drawSpSimplest(dyngs, Mdyngs, V, P);
 	drawSpSimplest(dyngs, MozdobnyDyngs, V, P);
 	drawSpSimplest(dyngs, MozdobnyDyngs2, V, P);
+	drawSpSimplest(pendulum, Mpendulum, V, P);
 	drawSpSimplest(roomWall, MleftWall, V, P);
 	drawSpSimplest(roomWall, MrightWall, V, P);
 	drawSpSimplest(roomWall, MfrontWall, V, P);
