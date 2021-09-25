@@ -328,13 +328,13 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	//OBIEKTY STATYCZNE
 	//dyngs
 	mat4 Mdyngs = mat4(1.f);
-	Mdyngs = translate(Mdyngs, vec3(0.f, 3.05f, 7.7f));
+	Mdyngs = translate(Mdyngs, vec3(0.f, 3.05f, 7.68f));
 	Mdyngs = scale(Mdyngs, vec3(0.7f, 0.7f, 0.7f));
 
 	mat4 MozdobnyDyngs = Mdyngs;
-	MozdobnyDyngs = translate(MozdobnyDyngs, vec3(0.92f, 1.085f, 0.02f));
+	MozdobnyDyngs = translate(MozdobnyDyngs, vec3(0.92f, 1.085f, 0.f));
 	mat4 MozdobnyDyngs2 = Mdyngs;
-	MozdobnyDyngs2 = translate(MozdobnyDyngs2, vec3(-0.92f, 1.085f, 0.02f));
+	MozdobnyDyngs2 = translate(MozdobnyDyngs2, vec3(-0.92f, 1.085f, 0.f));
 
 	//skrzynia zegara
 	mat4 Mpudlo = mat4(1.f);
@@ -343,7 +343,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 
 	//tarcza zegara
 	mat4 Mface = mat4(1.f);
-	Mface = translate(Mface, vec3(0.f, 3.055f, 7.68f));
+	Mface = translate(Mface, vec3(0.f, 3.05f, 7.68f));
 	Mface = scale(Mface, vec3(0.4f, 0.4f, 0.4f));
 
 	//TODO: SZKŁO

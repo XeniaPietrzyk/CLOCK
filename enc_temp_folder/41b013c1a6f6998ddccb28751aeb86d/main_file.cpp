@@ -343,7 +343,7 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 
 	//tarcza zegara
 	mat4 Mface = mat4(1.f);
-	Mface = translate(Mface, vec3(0.f, 3.055f, 7.68f));
+	Mface = translate(Mface, vec3(0.f, 3.05f, 7.68f));
 	Mface = scale(Mface, vec3(0.4f, 0.4f, 0.4f));
 
 	//TODO: SZKŁO
