@@ -16,6 +16,7 @@ Powszechnej Licencji Publicznej GNU(GNU General Public License);
 jeśli nie - napisz do Free Software Foundation, Inc., 59 Temple
 Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 */
+//TODO: dodać oznaczenie twórców modeli 3D
 
 #include "links.h"
 #define GLM_FORCE_RADIANS
@@ -27,9 +28,17 @@ float aspectRatio = 1; //do skalowania okna programu
 float speed_x = 0; //[radiany/s]
 float speed_y = 0; //[radiany/s]
 float walk_speed = 0;
-float speed = 2;
 
-vec3 pos = glm::vec3(0, 2, -11);
+//TODO: dostosować prędkość do realnych sekund/minut
+float hour = 0.f;
+float speed = 0.1f;
+float angleSpeed = speed;
+float pendulumAcumulator = 0;
+float pendulumAngle = 0;
+float angleTime = glfwGetTime();
+
+vec3 pos = vec3(0, 2, -11);
+
 
 //STEP: Kamera
 vec3 calcDir(float kat_x, float kat_y) {
@@ -67,7 +76,6 @@ public:
 		cout << importer.GetErrorString() << endl;
 
 		aiMesh* mesh = scene->mMeshes[0];
-
 	
 		for (int i = 0; i < mesh->mNumVertices; i++) {
 			aiVector3D vertex = mesh->mVertices[i]; //aiVector3D podobny do glm::vec3
@@ -132,7 +140,6 @@ public:
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
 	}
 };
 
@@ -144,13 +151,16 @@ Object* moon;
 Object* pendulum;
 Object* face;
 Object* glass;
-Object* room;
+Object* mWskazowka;
+Object* dWskazowka;
+Object* dyngs;
+Object* roomFloor;
+Object* roomWall;
 
 //STEP: Procedura obsługi błędów
 void error_callback(int error, const char* description) {
 	fputs(description, stderr);
 }
-
 
 //STEP: Sterowanie
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod)
@@ -160,10 +170,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_RIGHT) speed_y = -1;
 		if (key == GLFW_KEY_M) speed_x = 1;
 		if (key == GLFW_KEY_N) speed_x = -1;
-		if (key == GLFW_KEY_UP) walk_speed = 2;
-		if (key == GLFW_KEY_DOWN) walk_speed = -2;
-
+		if (key == GLFW_KEY_UP) walk_speed = 5;
+		if (key == GLFW_KEY_DOWN) walk_speed = -5;
+		if (key == GLFW_KEY_P)
+		{
+			speed = 180 * speed;
+			angleSpeed = 0.8f;
+		}
 	}
+
 	if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_LEFT) speed_y = 0;
 		if (key == GLFW_KEY_RIGHT) speed_y = 0;
@@ -171,6 +186,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_N) speed_x = 0;
 		if (key == GLFW_KEY_UP) walk_speed = 0;
 		if (key == GLFW_KEY_DOWN) walk_speed = 0;
+		if (key == GLFW_KEY_P) speed = 0.1f;
 	}
 }
 
@@ -192,11 +208,14 @@ void initOpenGLProgram(GLFWwindow* window) {
 	pudlo = new Object(string("zegar.obj"), "pudlo.png");
 	moon = new Object(string("moon.obj"), "moon.png");
 	pendulum = new Object(string("wahadlo.obj"), "wahadlo.png");
-	face = new Object(string("tarcza.obj"), "tarcza.png");
-	room = new Object(string("room.obj"), "room.png");
+	face = new Object(string("face.obj"), "tarcza.png");
+	dWskazowka = new Object(string("dWskazowka.obj"), "steel.png");
+	mWskazowka = new Object(string("mWskazowka.obj"), "steel.png");
+	dyngs = new Object(string("dyngs.obj"), "wahadlo.png");
+	roomFloor = new Object(string("floor.obj"), "floor.png");
+	roomWall = new Object(string("floor.obj"), "wall.png");
 
-	//TODO:
-	//jak wyrenderować szkło?
+	//TODO: jak wyrenderować szkło?
 	//glass = new Object(string(""), "");
 }
 
@@ -215,14 +234,20 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	delete pendulum;
 	glDeleteTextures(1, &(face->tex));
 	delete face;
-	glDeleteTextures(1, &(room->tex));
-	delete room;
+	glDeleteTextures(1, &(dWskazowka->tex));
+	delete dWskazowka;
+	glDeleteTextures(1, &(mWskazowka->tex));
+	delete mWskazowka;
+	glDeleteTextures(1, &(dyngs->tex));
+	delete dyngs;
+	glDeleteTextures(1, &(roomFloor->tex));
+	delete roomFloor;
+	glDeleteTextures(1, &(roomWall->tex));
+	delete roomWall;
 	
 	//glDeleteTextures(1, &(glass->tex));
 	//delete glass;
 }
-
-//TODO: metoda rysowania obiektów w drugim rodzaju oświetlenia
 
 
 //STEP: Procedura rysująca obiekty (spLambertTexture)
@@ -243,8 +268,6 @@ void drawObject(Object* object, mat4 objectMatrix/*, mat4 viewMatrix, mat4 persp
 //STEP: Procedura rysująca scenę
 void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	using namespace Models;
-
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Wyczyść bufor koloru i bufor głębokości
 		
 	spLambertTextured->use();	
@@ -253,63 +276,114 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	glEnableVertexAttribArray(spLambertTextured->a("normal"));
 	glEnableVertexAttribArray(spLambertTextured->a("texCoord"));
 
-	//TODO: animacja obrotu zębatki
+	//OBIEKTY DYNAMICZNE
 	//gear1
 	mat4 Mgear1 = mat4(1.f);
-	Mgear1 = translate(Mgear1, vec3(0.5f, 3.f, 0.f));
-	Mgear1 = scale(Mgear1, vec3(1.f,1.f, 1.f));
+	Mgear1 = translate(Mgear1, vec3(0.f, 3.05f, 8.f));
+	Mgear1 = scale(Mgear1, vec3(0.7f, 0.7f, 0.7f));
 	Mgear1 = rotate(Mgear1, angle, vec3(0.0f, 0.0f, 1.0f));
 	
-	//TODO: animacja zależna od gear1
 	//gear2
 	mat4 Mgear2 = mat4(0.4f);
-	Mgear2 = translate(Mgear2, vec3(1.f, 3.1f, 0.f));
-	Mgear2 = scale(Mgear2, vec3(0.75f, 0.75f, 0.75f));
-	Mgear2 = rotate(Mgear2, angle, vec3(0.0f, 0.0f, -1.0f));
-
-	//skrzynia zegara
-	mat4 Mpudlo = mat4(1.f);
-	Mpudlo = scale(Mpudlo, vec3(4.f, 4.f, 4.f));
-	Mpudlo = translate(Mpudlo, vec3(0.f, -1.f, 0.f));
+	Mgear2 = translate(Mgear2, vec3(0.f, 2.65f, 8.f));
+	Mgear2 = scale(Mgear2, vec3(0.7f, 0.7f, 0.7f));
+	Mgear2 = rotate(Mgear2, (1.1f*angle), vec3(0.0f, 0.0f, -1.0f));
 
 	//wahadlo
 	mat4 Mpendulum = mat4(1.f);
 	Mpendulum = scale(Mpendulum, vec3(4.f, 4.f, 4.f));
-	Mpendulum = translate(Mpendulum, vec3(0.f, -1.f, 0.f));
+	Mpendulum = translate(Mpendulum, vec3(0.f, 0.5f, 2.1f));	
+		
+	if ((pendulumAcumulator >= 0 && pendulumAcumulator < 30) || (pendulumAcumulator >= 90 && pendulumAcumulator <= 120))
+	{
+		pendulumAngle += 15*angleSpeed * glfwGetTime();
+		pendulumAcumulator++;
+	}
+	if ((pendulumAcumulator >= 30 && pendulumAcumulator < 60) || (pendulumAcumulator >= 60 && pendulumAcumulator < 90))
+	{
+		pendulumAngle -= 15*angleSpeed * glfwGetTime();
+		pendulumAcumulator++;
+	}
+	if (pendulumAcumulator == 121)
+	{
+		pendulumAcumulator = 0;
+		pendulumAngle = 0;
+	}
+
+	Mpendulum = rotate(Mpendulum, pendulumAngle, vec3(0.0f, 0.0f, -1.0f));
+
+	//TODO: animacja obrotu zależna od obrotu wskazówek
+	//skrzynia pory dnia
+	mat4 Mmoon = mat4(1.f);
+	Mmoon = scale(Mmoon, vec3(4.f, 4.f, 3.67f));
+	Mmoon = translate(Mmoon, vec3(0.f, 0.99f, 2.1f));
+	Mmoon = rotate(Mmoon, ((0.016f*angle)/2.f), vec3(0.f, 0.f, 1.f));
+
+	//duza wskazowka
+	mat4 MduzaWskazowka = mat4(1.f);
+	MduzaWskazowka = translate(MduzaWskazowka, vec3(0.f, 3.05f, 7.67f));
+	MduzaWskazowka = scale(MduzaWskazowka, vec3(0.36f, 0.36f, 0.36f));
+	MduzaWskazowka = rotate(MduzaWskazowka, angle, vec3(0.f, 0.f, 1.f));
+
+	//mala wskazowka
+	mat4 MmalaWskazowka = mat4(1.f);
+	MmalaWskazowka = translate(MmalaWskazowka, vec3(0.f, 3.05f, 7.67f));
+	MmalaWskazowka = scale(MmalaWskazowka, vec3(0.36f, 0.36f, 0.36f));
+	MmalaWskazowka = rotate(MmalaWskazowka, (0.016f*angle), vec3(0.f, 0.f, 1.f));
+
+	//OBIEKTY STATYCZNE
+	//dyngs
+	mat4 Mdyngs = mat4(1.f);
+	Mdyngs = translate(Mdyngs, vec3(0.f, 3.05f, 7.7f));
+	Mdyngs = scale(Mdyngs, vec3(0.7f, 0.7f, 0.7f));
+
+	mat4 MozdobnyDyngs = Mdyngs;
+	MozdobnyDyngs = translate(MozdobnyDyngs, vec3(0.92f, 1.085f, 0.02f));
+	mat4 MozdobnyDyngs2 = Mdyngs;
+	MozdobnyDyngs2 = translate(MozdobnyDyngs2, vec3(-0.92f, 1.085f, 0.02f));
+
+	//skrzynia zegara
+	mat4 Mpudlo = mat4(1.f);
+	Mpudlo = scale(Mpudlo, vec3(4.f, 4.f, 4.f));
+	Mpudlo = translate(Mpudlo, vec3(0.f, -1.f, 2.1f));
 
 	//tarcza zegara
 	mat4 Mface = mat4(1.f);
-	Mface = scale(Mface, vec3(4.f, 4.f, 4.f));
-	Mface = translate(Mface, vec3(0.f, -1.f, 0.f));
+	Mface = translate(Mface, vec3(0.f, 3.055f, 7.68f));
+	Mface = scale(Mface, vec3(0.4f, 0.4f, 0.4f));
 
-	//pomieszczenie
-	mat4 Mroom = mat4(1.f);
-	Mroom = translate(Mroom, vec3(-6.f, -8.f, 5.f));
-
-	// 
 	//TODO: SZKŁO
 	////szkło
 	//mat4 Mglass = mat4(1.f);
 	//Mglass = scale(Mglass, vec3(4.f, 4.f, 4.f));
 	//Mglass = translate(Mglass, vec3(0.f, -1.f, 0.f));
 
-	//TODO: animacja obrotu zależna od obrotu wskazówek
-	//skrzynia pory dnia
-	mat4 Mmoon = mat4(1.f);
-	Mmoon = scale(Mmoon, vec3(4.f, 4.f, 4.f));
-	Mmoon = translate(Mmoon, vec3(0.f, -1.f, 0.f));
-
+	//POMIESZCZENIE
+	//podloga
+	mat4 Mfloor = mat4(1.f);
+	Mfloor = translate(Mfloor, vec3(0.f, -4.f, 0.f));
+	//sciana lewa
+	mat4 MleftWall = mat4(1.f);
+	MleftWall = translate(MleftWall, vec3(10.f, 0.f, 0.f));
+	MleftWall = rotate(MleftWall, 1.57f, vec3(0.f, 0.f, 1.f));
+	//sciana prawa
+	mat4 MrightWall = mat4(1.f);
+	MrightWall = translate(MrightWall, vec3(-10.f, 0.f, 0.f));
+	MrightWall = rotate(MrightWall, 1.57f, vec3(0.f, 0.f, 1.f));
+	//sciana przednia
+	mat4 MfrontWall = mat4(1.f);
+	MfrontWall = translate(MfrontWall, vec3(0.f, 0.f, 10.f));
+	MfrontWall = rotate(MfrontWall, 1.57f, vec3(1.f, 0.f, 0.f));
 
 	//NOTE: Macierze V, P
-
-	glm::mat4 V = lookAt(pos, pos + calcDir(kat_x, kat_y), vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
+	vec3 center = pos + calcDir(kat_x, kat_y);
+	vec3 noseVector = vec3(0.0f, 1.0f, 0.0f);
+	mat4 V = lookAt(pos, center, noseVector); //Wylicz macierz widoku
 
 	float fovy = radians(50.0f);
 	float zNear = 1.f;
 	float zFar = 50.f;
 	mat4 P = perspective(fovy, aspectRatio, zNear, zFar);
-
-
 
 	//NOTE: rysowanie obiektów
 	drawObject(gear1, Mgear1);
@@ -317,19 +391,25 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 	drawObject(pudlo, Mpudlo);
 	drawObject(moon, Mmoon);
 	drawObject(pendulum, Mpendulum);
-	//drawObject(face, Mface);
+	drawObject(face, Mface);
+	drawObject(mWskazowka, MmalaWskazowka);
+	drawObject(dWskazowka, MduzaWskazowka);
+	drawObject(dyngs, Mdyngs);
+	drawObject(dyngs, MozdobnyDyngs);
+	drawObject(dyngs, MozdobnyDyngs2);
 	//drawObject(glass, Mglass);
-	//drawObject(room, Mroom);
+	drawObject(roomFloor, Mfloor);
+	drawObject(roomWall, MleftWall);
+	drawObject(roomWall, MrightWall);
+	drawObject(roomWall, MfrontWall);
 
 	//wysyłanie macierzy M,V,P do GPU:
 	glUniformMatrix4fv(spLambertTextured->u("V"), 1, false, value_ptr(V));
 	glUniformMatrix4fv(spLambertTextured->u("P"), 1, false, value_ptr(P));
-	
-	
+		
 	glDisableVertexAttribArray(spLambertTextured->a("vertex"));
 	glDisableVertexAttribArray(spLambertTextured->a("texCoord"));
 	glDisableVertexAttribArray(spLambertTextured->a("normal"));
-
 
 	glfwSwapBuffers(window); //Skopiuj bufor tylny do bufora przedniego
 }
@@ -368,14 +448,13 @@ int main(void)
 
 	initOpenGLProgram(window); //Operacje inicjujące
 
-
 	//STEP: Główna pętla	
 	float angle = 0; //zadeklaruj zmienną przechowującą aktualny kąt obrotu
 	float kat_x = 0;
 	float kat_y = 0;
 	glfwSetTime(0); //Wyzeruj licznik czasu
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
-	{
+	{		
 		kat_x += speed_x * glfwGetTime();
 		kat_y += speed_y * glfwGetTime();
 		pos += (float)(walk_speed * glfwGetTime()) * calcDir(kat_x, kat_y);
