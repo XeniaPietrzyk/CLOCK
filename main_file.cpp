@@ -32,8 +32,10 @@ float walk_speed = 0;
 //TODO: dostosować prędkość do realnych sekund/minut
 float hour = 0.f;
 float speed = 0.1f;
+float angleSpeed = speed;
 float pendulumAcumulator = 0;
 float pendulumAngle = 0;
+float angleTime = glfwGetTime();
 
 vec3 pos = vec3(0, 2, -11);
 
@@ -170,7 +172,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_N) speed_x = -1;
 		if (key == GLFW_KEY_UP) walk_speed = 5;
 		if (key == GLFW_KEY_DOWN) walk_speed = -5;
-		if (key == GLFW_KEY_P) speed = 180 * speed;
+		if (key == GLFW_KEY_P)
+		{
+			speed = 180 * speed;
+			angleSpeed = 0.8f;
+		}
 	}
 
 	if (action == GLFW_RELEASE) {
@@ -290,12 +296,12 @@ void drawScene(GLFWwindow* window, float kat_x,float kat_y, float angle) {
 		
 	if ((pendulumAcumulator >= 0 && pendulumAcumulator < 30) || (pendulumAcumulator >= 90 && pendulumAcumulator <= 120))
 	{
-		pendulumAngle += speed* glfwGetTime();
+		pendulumAngle += 15*angleSpeed * glfwGetTime();
 		pendulumAcumulator++;
 	}
 	if ((pendulumAcumulator >= 30 && pendulumAcumulator < 60) || (pendulumAcumulator >= 60 && pendulumAcumulator < 90))
 	{
-		pendulumAngle -= speed * glfwGetTime();
+		pendulumAngle -= 15*angleSpeed * glfwGetTime();
 		pendulumAcumulator++;
 	}
 	if (pendulumAcumulator == 121)
